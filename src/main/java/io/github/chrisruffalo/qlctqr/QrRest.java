@@ -41,6 +41,19 @@ public class QrRest extends RouteBuilder {
                 .defaultValue("false")
                 .endParam()
                 .to("direct:generate");
+
+        from("direct:generate")
+                .to("direct:qr")
+                .choice().when(this.header("format").in("html", "ascii")) // both html and ascii rely on ascii first
+                .to("direct:ascii")
+                .otherwise()
+                .setHeader("Content-Disposition", this.constant("inline"))
+                .end()
+                .choice().when(this.header("format").isEqualTo("html")) // html needs to get converted to entities and shoved in a html string
+                .to("direct:html")
+                .end()
+                .end()
+        ;
     }
 
 }

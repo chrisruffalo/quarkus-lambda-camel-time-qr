@@ -7,6 +7,7 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import io.quarkus.runtime.annotations.RegisterForReflection;
+import org.apache.camel.Consume;
 import org.apache.camel.Exchange;
 import org.apache.camel.Message;
 import org.apache.camel.builder.RouteBuilder;
@@ -29,9 +30,8 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @ApplicationScoped
-@Named("qr")
 @RegisterForReflection
-public class QrService extends RouteBuilder {
+public class QrService {
 
     @Inject
     Logger logger;
@@ -40,22 +40,6 @@ public class QrService extends RouteBuilder {
     private static final String UPPER_HALF = "▀";
     private static final String LOWER_HALF = "▄";
     private static final String NONE = " ";
-
-    @Override
-    public void configure() throws Exception {
-        from("direct:generate")
-            .to("bean:qr?method=generateQrCode")
-            .choice().when(this.header("format").in("html", "ascii")) // both html and ascii rely on ascii first
-                .to("bean:qr?method=turnToAscii")
-                .otherwise()
-                    .setHeader("Content-Disposition", this.constant("inline"))
-                .end()
-                .choice().when(this.header("format").isEqualTo("html")) // html needs to get converted to entities and shoved in a html string
-                    .to("bean:qr?method=html")
-                .end()
-            .end()
-            ;
-    }
 
     // originally from http://www.java2s.com/example/java/2d-graphics/invert-black-and-white-bufferedimage.html
     public static void invertBlackAndWhite(BufferedImage image) {
@@ -78,6 +62,7 @@ public class QrService extends RouteBuilder {
         return input.codePoints().mapToObj(codePoint -> String.format("&#%d;", codePoint)).collect(Collectors.joining(""));
     }
 
+    @Consume("direct:qr")
     public void generateQrCode(Exchange exchange) {
         final Message requestMessage = exchange.getIn();
 
@@ -87,8 +72,8 @@ public class QrService extends RouteBuilder {
             width = 100;
             height = 100;
         } else if ("ascii".equalsIgnoreCase(requestMessage.getHeader("format", String.class))) {
-            width = 60;
-            height = 60;
+            width = 73;
+            height = 73;
         }
 
         boolean invert = "true".equalsIgnoreCase(requestMessage.getHeader("invert", String.class));
@@ -122,6 +107,7 @@ public class QrService extends RouteBuilder {
         exchange.setMessage(requestMessage);
     }
 
+    @Consume("direct:ascii")
     public void turnToAscii(Exchange exchange) {
         final Message in = exchange.getIn();
         StringBuilder sb = new StringBuilder();
@@ -152,11 +138,12 @@ public class QrService extends RouteBuilder {
                             continue;
                         }
                         if (!inContent && ((!invert && (upper || lower)) || (invert && (!upper || !lower)))){
-                            int spacing = 2;
+                            int spacing = 4;
                             minX = x - spacing;
-                            maxX = width - x + (readImage.getHeight() / 30 > 2 ? 2 : 1); // hand tuning nonsense
-                            height = height - y + (invert ? 1 : 0);
+                            maxX = width - x + (readImage.getHeight() / 30 > 2 ? spacing : spacing - 1); // hand tuning nonsense
+                            height = height - y + (invert ? 2 : 1);
                             inContent = true;
+                            line.append(String.join("", Collections.nCopies(maxX - minX,invert ? FULL : NONE))).append(System.lineSeparator());
                             line.append(String.join("", Collections.nCopies(maxX - minX,invert ? FULL : NONE))).append(System.lineSeparator());
                             line.append(String.join("", Collections.nCopies(spacing, invert ? FULL : NONE)));
                         }
@@ -177,10 +164,13 @@ public class QrService extends RouteBuilder {
                         sb.append(System.lineSeparator());
                     }
                     // repeat one line to make the oddly shaped ascii line up right
-                    if (!doubledY && y + 1 > height / 2) {
+                    if (!doubledY && y + 1 > readImage.getHeight() / 2) {
                         y -= readImage.getHeight() / 30 > 2 ? 2 : 1; // hand tuning doubling
                         doubledY = true;
                     }
+                }
+                if (!invert) {
+                    sb.append(String.join("", Collections.nCopies(maxX - minX,invert ? FULL : NONE))).append(System.lineSeparator());
                 }
             } catch (IOException ex) {
                 logger.error("Could not read image from inputstream", ex);
@@ -192,9 +182,10 @@ public class QrService extends RouteBuilder {
         exchange.setMessage(in);
     }
 
+    @Consume("direct:html")
     public void html(final Exchange exchange) {
         final Message message = exchange.getIn();
-        final String outputHtml = String.format("<html lang='en'><head></head><body><pre><span style=\"font-family: monospace; font-size: 0.5em;\">%s</span></pre></body></html>", charactersToEntity(message.getBody(String.class)));
+        final String outputHtml = String.format("<html lang='en'><head></head><body><pre><span style=\"font-family: monospace; font-size: 0.75em;\">%s</span></pre></body></html>", charactersToEntity(message.getBody(String.class)));
         message.setHeader("Content-Length", outputHtml.getBytes().length);
         message.setHeader("Content-Type", "text/html");
         message.setBody(outputHtml);
