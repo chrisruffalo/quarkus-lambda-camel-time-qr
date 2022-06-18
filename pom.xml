@@ -102,12 +102,6 @@
             <artifactId>quarkus-awt</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-text</artifactId>
-            <version>1.9</version>
-        </dependency>
-
         <!-- testing -->
         <dependency>
             <groupId>io.quarkus</groupId>
