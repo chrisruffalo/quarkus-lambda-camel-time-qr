@@ -11,7 +11,7 @@ public class QrRestTest {
     @Test
     public void simpleDefault() {
         final Response response = RestAssured.given()
-                .get("/test/time.png")
+                .get("/time.png")
                 .then()
                 .statusCode(200)
                 .extract().response();
@@ -20,7 +20,7 @@ public class QrRestTest {
     @Test
     public void simpleNoFormat() {
         final Response response = RestAssured.given()
-                .get("/test/time")
+                .get("/time")
                 .then()
                 .statusCode(200)
                 .extract().response();
@@ -29,7 +29,7 @@ public class QrRestTest {
     @Test
     public void noMatchingUrl() {
         final Response response = RestAssured.given()
-                .get("/test/tiime")
+                .get("/tiime")
                 .then()
                 .statusCode(404)
                 .extract().response();
@@ -38,7 +38,7 @@ public class QrRestTest {
     @Test
     public void simpleAscii() {
         final Response response = RestAssured.given()
-                .get("/test/time.ascii")
+                .get("/time.ascii")
                 .then()
                 .statusCode(200)
                 .extract().response();
@@ -47,7 +47,7 @@ public class QrRestTest {
     @Test
     public void invertAscii() {
         final Response response = RestAssured.given()
-                .get("/test/time.ascii?invert=true")
+                .get("/time.ascii?invert=true")
                 .then()
                 .statusCode(200)
                 .extract().response();
@@ -56,7 +56,7 @@ public class QrRestTest {
     @Test
     public void paramFormatAscii() {
         final Response response = RestAssured.given()
-                .get("/test/time?format=ascii&invert=true")
+                .get("/time?format=ascii&invert=true")
                 .then()
                 .statusCode(200)
                 .extract().response();
@@ -65,7 +65,7 @@ public class QrRestTest {
     @Test
     public void simpleHtml() {
         final Response response = RestAssured.given()
-                .get("/test/time.html")
+                .get("/time.html")
                 .then()
                 .statusCode(200)
                 .extract().response();

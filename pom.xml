@@ -14,7 +14,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
-        <version.quarkus>2.9.2.Final</version.quarkus>
+        <version.quarkus>2.11.1.Final</version.quarkus>
         <version.quarkus.camel>${version.quarkus}</version.quarkus.camel>
         <version.zxing>3.5.0</version.zxing>
 
@@ -73,6 +73,10 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-resteasy-reactive</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.apache.camel.quarkus</groupId>
             <artifactId>camel-quarkus-bean</artifactId>

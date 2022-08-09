@@ -40,8 +40,7 @@ public class QrLambda implements RequestHandler<APIGatewayProxyRequestEvent, API
         return responseEvent;
     }
 
-    @Override
-    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+    public APIGatewayProxyResponseEvent handle(APIGatewayProxyRequestEvent input) {
         final String queryPath = input.getPath();
         String format = "png";
         String invert = "false";
@@ -82,7 +81,6 @@ public class QrLambda implements RequestHandler<APIGatewayProxyRequestEvent, API
 
         invert = params.getOrDefault("invert", invert);
 
-
         final Exchange ex = generate
                 .withBody(body)
                 .withHeader("format", format.toLowerCase())
@@ -113,6 +111,11 @@ public class QrLambda implements RequestHandler<APIGatewayProxyRequestEvent, API
         responseEvent.setBody(new String(responseBody));
         responseEvent.setStatusCode(200);
         return responseEvent;
+    }
+
+    @Override
+    public APIGatewayProxyResponseEvent handleRequest(APIGatewayProxyRequestEvent input, Context context) {
+        return handle(input);
     }
 
 }
