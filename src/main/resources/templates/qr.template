@@ -1,0 +1,20 @@
+<html lang='en'>
+    <head>
+        <style>
+            .vertical-center {
+                margin: 0;
+                position: absolute;
+                top: 45%;
+                left: 50%;
+                -ms-transform: translateY(-50%) translateX(-50%);
+                transform: translateY(-50%) translateX(-50%);
+            }
+        </style>
+        <title>QR</title>
+    </head>
+    <body height="100%">
+        <div class="vertical-center">
+            <pre><span style="font-family: monospace; font-size: 0.95em; line-height: 12px">{qr}</span></pre>
+        </div>
+    </body>
+</html>
